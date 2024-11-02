@@ -3,7 +3,8 @@ local ecs = {}
 -- Local versions of standard lua functions
 local tinsert = table.insert
 local tremove = table.remove
-
+local tsort = table.sort
+local setmetabale = setmetatable
 
 -- Systems
 
@@ -41,7 +42,7 @@ local function sortedSystemOnModify(system)
 		end
 		system.sortDelegate = sortDelegate
 	end
-	table.sort(entities, sortDelegate)
+	tsort(entities, sortDelegate)
 	for i = 1, #entities do
 		indices[entities[i]] = i
 	end
@@ -54,14 +55,14 @@ end
 --
 -- Systems have their own `update` method, so don't implement a a custom `update` callback for Systems.
 function ecs.newSystem(table)
-	table = table or {}
+	table = table and setmetatable({}, { __index = table }) or {}
 	table.update = processingSystemUpdate
 	return table
 end
 
 --- Creates a new Sorted System. Sorted Systems sort their Entities according to a user-defined method, `system:compare(e1, e2)`, which should return true if `e1` should come before `e2` and false otherwise.
 function ecs.sortedSystem(table)
-	table = table or {}
+	table = table and setmetatable({}, { __index = table }) or {}
 	table.update = processingSystemUpdate
 	table.onModify = sortedSystemOnModify
 	return table
